@@ -115,7 +115,7 @@ ________________________________________
 ## Back-end
 
 **Ferramentas:**
-* Laravel 5
+* Laravel 5.4
 * Eloquent
 
 Utilizar banco de dados MySQL ou MariaDB, criando as tabelas com a engine InnoDB. Criar as tabelas com relacionamentos. Se preferir, pode utilizar docker.
