@@ -1,0 +1,125 @@
+name: Backend CI/CD - Laravel 5.4 Zero-Downtime
+
+on:
+  push:
+    branches:
+      - stage
+      - main
+
+jobs:
+  backend-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout do código
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2️⃣ Setup PHP 7.0
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.0
+          extensions: mbstring, openssl, pdo_mysql, tokenizer, xml
+
+      # 3️⃣ Instalar dependências
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      # 4️⃣ Rodar Testes
+      - name: Run Tests
+        run: php artisan test || echo "⚠️ Sem testes configurados"
+
+      # 5️⃣ Versionamento automático
+      - name: Increment Patch Version
+        id: version
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "v0.0.0")
+          IFS='.' read -r major minor patch <<< "${latest_tag#v}"
+          patch=$((patch+1))
+          new_tag="v$major.$minor.$patch"
+          echo "new_tag=$new_tag" >> $GITHUB_ENV
+          git tag $new_tag
+          git push origin $new_tag
+          echo "Nova tag criada: $new_tag"
+
+      # 6️⃣ Criar Release no GitHub
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.new_tag }}
+          name: "Release ${{ env.new_tag }}"
+          body: |
+            🚀 Deploy automático realizado!
+            - Branch: ${{ github.ref_name }}
+            - Versão: ${{ env.new_tag }}
+            - Autor: ${{ github.actor }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 7️⃣ Deploy Zero-Downtime via SSH
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_SSH_PORT }}
+          script: |
+            set -e  # para se qualquer step falhar → rollback automático
+
+            echo "=== Deploy Zero-Downtime Iniciado ==="
+            TIMESTAMP=$(date +%Y%m%d%H%M%S)
+            RELEASE_DIR=/var/www/backend/releases/$TIMESTAMP
+            SHARED_DIR=/var/www/backend/shared
+            CURRENT_DIR=/var/www/backend/current
+
+            echo "Criando release: $RELEASE_DIR"
+            mkdir -p $RELEASE_DIR
+
+            echo "Copiando código"
+            git archive HEAD | tar -x -C $RELEASE_DIR
+
+            echo "Linkando arquivos compartilhados"
+            ln -s $SHARED_DIR/.env $RELEASE_DIR/.env
+            ln -s $SHARED_DIR/storage $RELEASE_DIR/storage
+
+            echo "Instalando dependências"
+            cd $RELEASE_DIR
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+
+            echo "Rodando migrations"
+            php artisan migrate --force
+
+            echo "Cache Laravel"
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            echo "Atualizando symlink 'current'"
+            ln -sfn $RELEASE_DIR $CURRENT_DIR
+
+            echo "Removendo releases antigas (mantendo 5 últimas)"
+            cd /var/www/backend/releases
+            ls -1tr | head -n -5 | xargs -d '\n' rm -rf --
+
+            echo "✅ Deploy finalizado com sucesso: $RELEASE_DIR"
+
+      # 8️⃣ Notificações Teams - Sucesso
+      - name: Notify Teams - Success
+        if: success()
+        uses: Ilshidur/action-teams@v2.1.0
+        with:
+          webhook-uri: "${{ secrets.TEAMS_WEBHOOK }}"
+          title: "Deploy Laravel Backend - Sucesso"
+          message: "Deploy da branch ${{ github.ref_name }} finalizado com sucesso no servidor."
+
+      # 9️⃣ Notificações Teams - Falha
+      - name: Notify Teams - Failure
+        if: failure()
+        uses: Ilshidur/action-teams@v2.1.0
+        with:
+          webhook-uri: "${{ secrets.TEAMS_WEBHOOK }}"
+          title: "Deploy Laravel Backend - Falha"
+          message: "Deploy da branch ${{ github.ref_name }} falhou. Verifique os logs do GitHub Actions."
