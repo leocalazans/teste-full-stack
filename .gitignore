@@ -1,0 +1,68 @@
+# -------------------------------------------------------------------
+# Configurações do Composer / Pastas de Dependências
+# -------------------------------------------------------------------
+# Ignora a pasta de dependências do Composer
+/vendor/
+# Ignora o arquivo de bloqueio do Composer (pode ser útil ignorar temporariamente, mas geralmente é versionado)
+# composer.lock
+
+# -------------------------------------------------------------------
+# Arquivos de Ambiente
+# -------------------------------------------------------------------
+# O arquivo .env contém chaves de API, senhas e outras informações sensíveis.
+# Ele NUNCA deve ser versionado.
+.env
+# Arquivos de teste de ambiente (se você usar)
+.env.testing
+.env.production
+.env.staging
+
+# -------------------------------------------------------------------
+# Laravel: Cache, Logs, e Arquivos Temporários
+# -------------------------------------------------------------------
+# Pasta de armazenamento de logs, cache e sessões
+/storage/*.key
+/public/storage
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*.log
+/bootstrap/cache/*.php
+
+# -------------------------------------------------------------------
+# Arquivos de Debug e Ambientes de Desenvolvimento
+# -------------------------------------------------------------------
+# Arquivos de dump do PHP (comuns em caso de erro fatal)
+*.sql
+*.sqlite
+*.sqlite3
+/storage/*.sqlite
+/storage/*.sqlite3
+
+# Arquivos de IDEs e Editores
+# ------------------------------
+# VS Code (Visual Studio Code)
+.vscode/
+
+# PHPStorm / WebStorm / Outras IDEs JetBrains
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*~
+*.swp
+.netrwhist
+
+# -------------------------------------------------------------------
+# Node.js (Se o seu Laravel 5 usar Elixir ou Webpack/Mix para assets)
+# -------------------------------------------------------------------
+# Dependências do NPM
+/node_modules
+# Arquivos gerados pelo Webpack/Mix/Elixir
+/public/hot
+/public/mix-manifest.json
+/npm-debug.log
+yarn-error.log
