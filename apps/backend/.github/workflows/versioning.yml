@@ -1,0 +1,90 @@
+name: Backend Versioning (Develop)
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  backend-versioning:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10.3.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: laravel_test
+          MYSQL_USER: laravel
+          MYSQL_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      # 1️⃣ Checkout do código
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2️⃣ Setup PHP 7.0
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.0
+          extensions: mbstring, openssl, pdo_mysql, tokenizer, xml
+
+      # 3️⃣ Instalar dependências
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      # 4️⃣ Configurar .env para testes
+      - name: Setup environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=mysql/' .env
+          sed -i 's/DB_HOST=127.0.0.1/DB_HOST=127.0.0.1/' .env
+          sed -i 's/DB_PORT=3306/DB_PORT=3306/' .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=laravel_test/' .env
+          sed -i 's/DB_USERNAME=.*/DB_USERNAME=laravel/' .env
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=secret/' .env
+
+      # 5️⃣ Esperar MariaDB subir
+      - name: Wait for MariaDB
+        run: |
+          for i in {1..15}; do
+            mysql -h 127.0.0.1 -u laravel -psecret -e "SELECT 1;" laravel_test && break
+            echo "⏳ Aguardando MariaDB..."
+            sleep 5
+          done
+
+      # 6️⃣ Rodar migrations
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      # 7️⃣ Rodar Testes
+      - name: Run Unit Tests
+        run: php artisan test || (echo "❌ Testes falharam, abortando tag" && exit 1)
+
+      # 8️⃣ Versionamento automático (patch)
+      - name: Increment Patch Version
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "v0.0.0")
+          IFS='.' read -r major minor patch <<< "${latest_tag#v}"
+          patch=$((patch+1))
+          new_tag="v$major.$minor.$patch"
+          git tag $new_tag
+          git push origin $new_tag
+          echo "✅ Nova tag criada: $new_tag"
+
+      # 9️⃣ Rollback migrations (simulação)
+      - name: Rollback migrations
+        if: always()
+        run: |
+          echo "🔄 Executando rollback de migrations..."
+          php artisan migrate:rollback --force || echo "⚠️ Nenhuma migration para reverter."
