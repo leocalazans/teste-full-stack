@@ -1,51 +1,119 @@
-<p align="center"><img src="https://laravel.com/assets/img/components/logo-laravel.svg"></p>
-
 <p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
+  <img src="https://laravel.com/assets/img/components/logo-laravel.svg" alt="Laravel Logo">
 </p>
 
-## About Laravel
+<p align="center">
+  <a href="#"><img src="https://img.shields.io/badge/PHP-7.0-blue" alt="PHP 7.0"></a>
+  <a href="https://mariadb.org/download/?o=true&p=mariadb&r=10.3.7&os=windows&cpu=x86_64&pkg=zip&mirror=archive&t=mariadb"><img src="https://img.shields.io/badge/MariaDB-10.3.7-blue" alt="MariaDB 10.3.7"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Laravel-5.4-red" alt="Laravel 5.4"></a>
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as:
+## About This Project
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+This is the **backend** for our full-stack project using **Laravel 5.4**, **PHP 7.0** and **MariaDB 10.3**. It includes:
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications. A superb combination of simplicity, elegance, and innovation give you tools you need to build any application with which you are tasked.
+- Laravel 5.4 framework with Eloquent ORM
+- GitHub Actions workflows for automated versioning and testing
+- Ready for zero-downtime deployment (stage/main) and versioned develop workflow
+- Pre-configured for MariaDB 10.3, compatible with PHP 7 and Laravel 5.4
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough documentation and video tutorial library of any modern web application framework. The [Laravel documentation](https://laravel.com/docs) is thorough, complete, and makes it a breeze to get started learning the framework.
+## Requirements
 
-If you're not in the mood to read, [Laracasts](https://laracasts.com) contains over 900 video tutorials on a range of topics including Laravel, modern PHP, unit testing, JavaScript, and more. Boost the skill level of yourself and your entire team by digging into our comprehensive video library.
+- PHP 7.0
+- Composer
+- MariaDB 10.3.7 (download: [MariaDB 10.3.7 ZIP for Windows](https://mariadb.org/download/?o=true&p=mariadb&r=10.3.7&os=windows&cpu=x86_64&pkg=zip&mirror=archive&t=mariadb))
+- Git
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for helping fund on-going Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](http://patreon.com/taylorotwell):
+## Setup & Run Locally
 
-- **[Vehikl](http://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- **[Styde](https://styde.net)**
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
+1. Clone the repository
+
+    git clone <YOUR_REPO_URL>
+    cd apps/backend
+
+2. Install dependencies
+
+    composer install
+
+3. Setup environment
+
+    cp .env.example .env
+    php artisan key:generate
+
+Configure `.env` com seu banco local:
+
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=laravel_test
+    DB_USERNAME=laravel
+    DB_PASSWORD=secret
+
+4. Run migrations
+
+    php artisan migrate
+
+5. Run the app
+
+    php artisan serve
+
+O app rodará por padrão em http://127.0.0.1:8000
+
+6. Run unit tests
+
+    php artisan test
+
+---
+
+## Composer Alias (Windows Shortcut)
+
+Para facilitar comandos Composer no Windows:
+
+    doskey composer2=php C:\caminho\para\composer.phar $*
+
+Depois, rode todos os comandos via `composer2`.
+
+---
+
+## GitHub Actions Workflows
+
+- apps/backend/.github/workflows/versioning.yml → executa na branch develop, auto-tags, testes unitários e rollback simulado
+- .github/workflows/backend-cicd.yml → executa em stage/main, deploy zero-downtime, rollback real em caso de falha, notificações no Teams
+
+---
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](http://laravel.com/docs/contributions).
+Siga o GitHub flow: crie branches a partir de develop, abra pull requests e siga Conventional Commits:
 
-## Security Vulnerabilities
+- feat(...) → nova feature
+- fix(...) → correção de bug
+- chore(...) → tarefas gerais
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+---
+
+## Composer Alias (Windows Shortcut)
+
+Para facilitar comandos Composer no Windows e garantir compatibilidade com PHP 7.0, usamos uma versão específica do Composer localizada em `apps/backend/composer.phar`.
+
+Para criar o alias no terminal do Windows, rode:
+
+    doskey composer2=php apps/backend/composer.phar $*
+
+Depois, todos os comandos Composer podem ser executados via `composer2`.
+
+## Notes
+
+- Branch `develop` é usada apenas para testes dos desenvolvedores, não possui rollback real.
+- Use MariaDB 10.3.7 com PHP 7.0 para evitar incompatibilidades com Laravel 5.4.
+- Workflows do GitHub Actions automatizam versionamento e deploy zero-downtime.
+
+
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+This project is **private** and proprietary. All rights reserved.
