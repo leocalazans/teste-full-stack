@@ -1,12 +1,26 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  standalone: true,
+  imports: [CommonModule, RouterOutlet],
+  template: `
+      <main>
+          <router-outlet></router-outlet>
+      </main>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
-  title = 'frontend';
+  // 🔹 Signal para autenticação (poderia vir de AuthService)
+  private authSignal = signal<boolean>(false);
+
+  isAuthenticated = this.authSignal.asReadonly();
+
+  logout() {
+    // Aqui você vai limpar o JWT armazenado (ex.: cookie HttpOnly via backend)
+    this.authSignal.set(false);
+  }
 }
