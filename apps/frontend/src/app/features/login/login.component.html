@@ -7,11 +7,11 @@
   <!-- Coluna Direita (formulário) -->
   <div class="flex items-center justify-center px-6 py-6 bg-white">
     <div class="w-full max-w-sm">
-      <app-logo class="block h-10 md:h-12 w-6 my-12 p-5 mx-auto"></app-logo>
+      <app-logo class="block  p-5 mx-auto"></app-logo>
 
       <!-- <h1 class="text-2xl font-semibold text-primary-700 mb-6">Entrar</h1> -->
 
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4 mt-15">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4 mt-3">
         <!-- Email -->
         <div>
           <input type="email" formControlName="email" placeholder="Digite seu e-mail"
@@ -58,7 +58,9 @@
 
         <!-- Erro geral -->
         <div *ngIf="error" class="mt-2 text-center text-sm text-red-600">
-          {{ error }}
+          <p>
+            {{ error }}
+          </p>
         </div>
       </form>
     </div>

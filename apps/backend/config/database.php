@@ -52,6 +52,12 @@ return [
             'prefix' => '',
             'strict' => false,
             'engine' => null,
+            // Ensure PDO initializes connection charset which can help when
+            // the server advertises a charset the client doesn't understand.
+            // This forces the connection to use utf8mb4 at startup.
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                defined('PDO::MYSQL_ATTR_INIT_COMMAND') ? PDO::MYSQL_ATTR_INIT_COMMAND : 0 => "SET NAMES 'utf8mb4'",
+            ]) : [],
         ],
 
         'pgsql' => [

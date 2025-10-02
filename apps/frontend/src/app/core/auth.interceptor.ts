@@ -14,7 +14,11 @@ export class AuthInterceptor implements HttpInterceptor {
         if (err.status === 401 && !req.url.endsWith('/auth/refresh')) {
           // try refresh
           return this.http.post('/api/auth/refresh', {}, { withCredentials: true }).pipe(
-            switchMap(() => next.handle(req)),
+            switchMap(() => {
+              // resend the original request but ensure credentials are included so cookies are sent
+              const retryReq = req.clone({ withCredentials: true });
+              return next.handle(retryReq);
+            }),
             catchError(e => {
               // final failure: force logout or redirect to login
               return throwError(() => e);

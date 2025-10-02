@@ -176,4 +176,17 @@ return [
 
     'http_only' => true,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Same-Site Cookies
+    |--------------------------------------------------------------------------
+    |
+    | This option determines how cookies are sent with cross-site requests.
+    | Setting this to null leaves the browser default (recommended for dev).
+    | For production cross-site requests you may need 'none' with secure=true
+    | and HTTPS.
+    |
+    */
+    'same_site' => env('SESSION_SAME_SITE', null),
+
 ];
