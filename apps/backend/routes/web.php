@@ -14,3 +14,8 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Handle CORS preflight requests for any web route
+Route::options('{any}', function () {
+    return response()->json('OK', 200);
+})->where('any', '.*');

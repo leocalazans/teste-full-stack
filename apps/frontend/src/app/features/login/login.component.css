@@ -1,0 +1,4 @@
+/* Apenas ajustes extras, já que o Tailwind cobre o layout */
+:host {
+  display: block;
+}

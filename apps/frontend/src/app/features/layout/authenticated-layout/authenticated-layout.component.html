@@ -1,0 +1,56 @@
+<div class="flex min-h-screen w-full flex-col bg-gray ">
+  <!-- Sidebar -->
+  <aside class="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r border-gray-100 bg-white sm:flex">
+    <nav class="flex flex-col items-center gap-4 px-2 sm:py-5">
+      <div
+        class="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-package2 h-4 w-4 transition-all group-hover:scale-110">
+          <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"></path>
+          <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"></path>
+          <path d="M12 3v6"></path>
+        </svg>
+        <span class="sr-only">icone</span>
+      </div>
+      <a class="relative group  flex h-9 w-9 items-center justify-center rounded-md gap-2 p-2 transition-colors md:h-8 md:w-8 bg-accent text-white transition"
+        data-state="dashboard" routerLink="/dashboard">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class=" h-5 w-5 group-hover:scale-105">
+          <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
+          <path
+            d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z">
+          </path>
+        </svg>
+        <span class="sr-only">Dashboard</span>
+        <span
+          class="absolute left-14 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition">
+          Dashboard
+        </span>
+      </a>
+      <a class="relative group flex h-9 w-9 items-center justify-center rounded-md gap-2 p-2 transition-colors md:h-8 md:w-8 bg-accent text-white transition"
+        data-state="clinicas" routerLink="/dashboard/clinicas">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class=" h-5 w-5 group-hover:scale-105">
+          <path d="M11 2v2"></path>
+          <path d="M5 2v2"></path>
+          <path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"></path>
+          <path d="M8 15a6 6 0 0 0 12 0v-3"></path>
+          <circle cx="20" cy="10" r="2"></circle>
+        </svg>
+        <span class="sr-only">Clínicas</span>
+        <span
+          class="absolute left-14 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition">
+          Clínicas
+        </span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="flex flex-col sm:gap-4 sm:py-4 md:pl-14 sm:pl-14">
+    <router-outlet></router-outlet>
+  </div>
+</div>
