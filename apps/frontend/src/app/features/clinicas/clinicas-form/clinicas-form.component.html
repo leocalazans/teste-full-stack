@@ -1,0 +1,149 @@
+<div class="flex flex-col sm:gap-4 sm:py-4 sm:pl-14 bg-gray-50 min-h-screen">
+
+  <main class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 max-w-5xl mx-auto w-full">
+    <div class="rounded-lg border border-gray-100 p-10 bg-card text-card-foreground shadow-xl">
+      <div class="flex flex-col space-y-1.5 p-10">
+        <div class="text-2xl font-bold leading-none tracking-tight text-primary">{{ cardTitle() }}</div>
+        <!-- Subtítulo Dinâmico -->
+        <div class="text-sm text-muted-foreground">{{ cardSubtitle() }}</div>
+      </div>
+
+      <div class=" p-6 pt-6">
+        <form [formGroup]="clinicForm" (ngSubmit)="onSubmit()" class="space-y-8">
+
+          <!-- GRID DE CAMPOS PRINCIPAIS -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- Razão Social -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium leading-none" for="corporateName">Razão Social *</label>
+              <input formControlName="corporateName" type="text"
+                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Clínica Médica Exemplo LTDA" id="corporateName">
+              @if (clinicForm.controls.corporateName.invalid && (clinicForm.controls.corporateName.dirty ||
+              clinicForm.controls.corporateName.touched)) {
+              <p class="text-red-500 text-xs mt-1">Razão Social é obrigatória.</p>
+              }
+            </div>
+
+            <!-- Nome Fantasia -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium leading-none" for="fantasyName">Nome Fantasia *</label>
+              <input formControlName="fantasyName" type="text"
+                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Clínica Exemplo" id="fantasyName">
+              @if (clinicForm.controls.fantasyName.invalid && (clinicForm.controls.fantasyName.dirty ||
+              clinicForm.controls.fantasyName.touched)) {
+              <p class="text-red-500 text-xs mt-1">Nome Fantasia é obrigatório.</p>
+              }
+            </div>
+
+            <!-- CNPJ -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium leading-none" for="cnpj">CNPJ *</label>
+              <input formControlName="cnpj" type="text"
+                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+                placeholder="00.000.000/0000-00" id="cnpj">
+              @if (clinicForm.controls.cnpj.invalid && (clinicForm.controls.cnpj.dirty ||
+              clinicForm.controls.cnpj.touched)) {
+              <p class="text-red-500 text-xs mt-1">CNPJ é obrigatório (Formato: 00.000.000/0000-00).</p>
+              }
+            </div>
+
+            <!-- Regional (Dropdown Simulado com Select nativo) -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium leading-none" for="regional">Regional *</label>
+              <select formControlName="regional"
+                class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                id="regional">
+                <option value="" disabled>Selecione uma regional</option>
+                @for (region of regions(); track region.value) {
+                <option [value]="region.value">{{ region.label }}</option>
+                }
+              </select>
+              @if (clinicForm.controls.regional.invalid && (clinicForm.controls.regional.dirty ||
+              clinicForm.controls.regional.touched)) {
+              <p class="text-red-500 text-xs mt-1">A Regional é obrigatória.</p>
+              }
+            </div>
+
+            <!-- Data de Inauguração (Input Type Date) -->
+            <div class="space-y-2 flex flex-col">
+              <label class="text-sm font-medium leading-none" for="inaugurationDate">Data de Inauguração</label>
+              <input formControlName="inaugurationDate" type="date"
+                class="flex h-10 px-4 py-2 w-full rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground text-left font-normal"
+                id="inaugurationDate">
+            </div>
+
+            <!-- Especialidades Médicas Atendidas (Simulação de Multi-Select/Tags) -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium leading-none" for="specialties">Especialidades Médicas Atendidas</label>
+              <div
+                class="group rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                <div class="flex flex-wrap gap-2">
+                  <!-- Tags Selecionadas -->
+                  @for (specialty of clinicForm.controls.specialties.value; track specialty) {
+                  <span
+                    class="flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-1 text-xs font-medium">
+                    {{ specialty }}
+                    <button type="button" (click)="removeSpecialty(specialty)"
+                      class="text-primary/70 hover:text-primary">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-x">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                      </svg>
+                    </button>
+                  </span>
+                  }
+                  <!-- Dropdown/Input para Seleção -->
+                  <select (change)="addSpecialty($event)"
+                    class="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground min-w-40 h-8">
+                    <option value="" disabled selected>Selecione as especialidades</option>
+                    @for (specialty of availableSpecialties(); track specialty) {
+                    <option [value]="specialty" [disabled]="isSpecialtySelected(specialty)">
+                      {{ specialty }}
+                    </option>
+                    }
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ativa/Inativa (Checkbox) -->
+            <div
+              class="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-gray-50/50 col-span-1 md:col-span-2">
+              <input formControlName="isActive" type="checkbox" id="isActive"
+                class="h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground">
+              <div class="space-y-1 leading-none">
+                <label
+                  class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  for="isActive">Ativa</label>
+                <p class="text-xs text-muted-foreground">Marque para tornar a clínica ativa no sistema.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTÕES DE AÇÃO -->
+          <div class="flex justify-end gap-2 border-t pt-6">
+            <button type="button"
+              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="clinicForm.invalid"
+              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:bg-primary/50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+              {{ submitButtonText() }}
+            </button>
+          </div>
+
+          <pre class="mt-4 p-4 text-xs bg-gray-800 text-white rounded-lg overflow-auto">
+                <h3 class="font-bold mb-2">DEBUG: Modo {{ isEditing() ? 'Edição (ID: ' + clinicData()?.id + ')' : 'Criação' }}</h3>
+                Formulário Válido: {{ clinicForm.valid }}
+                Dados do Formulário: {{ clinicForm.value | json }}
+              </pre>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>

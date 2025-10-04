@@ -1,0 +1,5 @@
+    /* Estilos básicos para o container principal */
+    :host {
+      font-family: 'Inter', sans-serif;
+      display: block;
+    }

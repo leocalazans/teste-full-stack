@@ -2,10 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../app.config';
-import { Clinic } from './clinic.model';
+import { Clinic } from './clinicas.model';
 
 @Injectable({ providedIn: 'root' })
-export class ClinicService {
+export class ClinicasService {
   private http = inject(HttpClient);
   private baseUrl = inject(API_BASE_URL);
 
@@ -24,4 +24,14 @@ export class ClinicService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/clinics/${id}`, { withCredentials: true });
   }
+  getClinicById(id: string): Observable<Clinic> {
+    // return {
+    //   id: 1,
+    //   name: 'Clínica Exemplo',
+    //   address: 'Rua Exemplo, 123',
+    //   phone: '(11) 12345-6789'
+    // } as any
+    return this.http.get<Clinic>(`${this.baseUrl}/clinics/${id}`, { withCredentials: true });
+  };
 }
+
