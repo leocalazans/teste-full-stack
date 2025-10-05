@@ -1,18 +1,12 @@
-import { Component, signal, computed, inject, effect } from '@angular/core';
+import { Component, signal, computed, inject, effect, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DropdownComponent } from '../../../components/dropdown/dropdown.component';
 import { ClinicasService } from '../clinicas.service';
 import { Clinic } from '../clinicas.model';
-// import
-// interface Clinic {
-//   fantasyName: string;
-//   corporateName: string;
-//   cnpj: string;
-//   status: 'Ativa' | 'Inativa';
-//   inauguration: string; // Formato dd/mm/aaaa
-// }
+import { ToastService } from '../../toast/toast.service';
+
 
 interface SortState {
   column: keyof Clinic | null;
@@ -24,11 +18,15 @@ interface SortState {
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule, DropdownComponent],
   templateUrl: './clinicas-list.component.html',
-  styleUrl: './clinicas-list.component.css'
+  styleUrl: './clinicas-list.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+
 })
 export class ClinicasListComponent {
   private clinicasService = inject(ClinicasService);
   private router = inject(Router);
+  private toastService = inject(ToastService);
+
   clinicas = signal<Clinic[]>([]);
   isLoading = signal(false);
 
@@ -45,7 +43,6 @@ export class ClinicasListComponent {
   pageSize = signal(5);
   currentPage = signal(1);
 
-  // 💥 NOVO: Estado da Ordenação
   sortState = signal<SortState>({ column: 'inauguration_date', direction: 'desc' });
 
   // Função utilitária para converter dd/mm/aaaa para um objeto Date.
@@ -85,7 +82,6 @@ export class ClinicasListComponent {
       let comparison = 0;
 
       if (state.column === 'inauguration_date') {
-        // 💥 Lógica específica para DATA 💥
         const dateA = this.parseDate(aValue as string).getTime();
         const dateB = this.parseDate(bValue as string).getTime();
         comparison = dateA - dateB;
@@ -190,13 +186,22 @@ export class ClinicasListComponent {
   });
 
   onItemSelected(item: { label: string, value: any }, id: string) {
-    console.log('ID:', id);
-    console.log('Selecionado:', item.value);
     this.selectedItemLabel = item.label;
     if (item.value === 'ver') {
       this.router.navigate([`/dashboard/clinica/${id}`]);
     }
-    // Adicione a lógica de ação aqui
-  }
+    if (item.value === 'deletar') {
+      this.clinicasService.delete(id).subscribe({
+        next: () => {
+          this.toastService.show('Clínica deletada com sucesso!', 'success');
 
+          this.clinics.set(this.clinics().filter(clinic => clinic.id !== id));
+
+        },
+        error: (err) => {
+          console.error('Erro ao deletar clínica:', err);
+        }
+      });
+    }
+  }
 }

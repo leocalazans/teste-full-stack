@@ -2,31 +2,30 @@ import { ChangeDetectionStrategy, Component, computed, WritableSignal, signal, i
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Clinic } from '../clinicas.model';
-// Reutilizando a interface de dados para a estrutura da clínica
+import { ModalComponent } from '../../../components/modal/modal.component';
+import { clinicasStore } from '../clinic.store';
 
 @Component({
   selector: 'app-clinicas-view',
-  imports: [CommonModule],
+  imports: [CommonModule, ModalComponent],
   standalone: true,
   templateUrl: './clinicas-view.component.html',
   styleUrl: './clinicas-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 
 })
-export class ClinicasViewComponent implements OnInit { // Adicionado 'implements OnInit' para clareza
+export class ClinicasViewComponent {
   private route = inject(ActivatedRoute);
   private location = inject(Location);
   private router = inject(Router);
+  store = inject(clinicasStore);
+
+  isModalOpen: WritableSignal<boolean> = signal(false);
 
   clinic: WritableSignal<Clinic | undefined> = signal(
     this.route.snapshot.data['clinic'] as Clinic | undefined
   );
 
-
-  ngOnInit(): void {
-
-    console.log('ClinicasViewComponent initialized. Clinic data loaded into signal.');
-  }
 
   feedback: WritableSignal<string | null> = signal(null);
 
@@ -41,33 +40,25 @@ export class ClinicasViewComponent implements OnInit { // Adicionado 'implements
 
 
   editClinic(): void {
-    this.router.navigate(['/dashboard/clinica/editar', this.clinic()?.id]);
-  }
-
-
-  addSpecialty(): void {
-    const newSpecialty = 'Odontologia';
-    let success = false;
-
-
-    this.clinic.update((current) => {
-      if (current) {
-        success = true;
-        return {
-          ...current,
-          specialties: [...(current.specialties ?? []), newSpecialty]
-        };
-      }
-      return current; // Se 'current' for undefined, retorna undefined (sem mudança)
-    });
-
-    if (success) {
-      this.showFeedback('Especialidade "' + newSpecialty + '" adicionada (simulado).');
-    } else {
-      this.showFeedback('Erro: Não é possível adicionar especialidade, clínica não carregada.');
+    if (this.clinic()) {
+      this.store.selectClinic(this.clinic()!);
+      this.router.navigate(
+        ['/dashboard/clinica/editar', this.clinic()?.id]
+      );
     }
   }
 
+  openModal() {
+    this.isModalOpen.set(true);
+  }
+
+  closeModal() {
+    this.isModalOpen.set(false);
+  }
+
+  showAllSpecialty(): void {
+    this.openModal();
+  }
 
   private showFeedback(message: string): void {
     this.feedback.set(message);

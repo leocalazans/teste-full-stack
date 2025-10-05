@@ -3,7 +3,7 @@
   (click)="handleBackdropClick($event)">
   <div role="dialog" [attr.aria-labelledby]="titleId" aria-modal="true"
     class="relative w-full max-w-lg rounded-xl bg-white shadow-2xl transition-all duration-300 transform scale-100 ease-out">
-    <div class="flex items-center justify-between border-b p-4">
+    <div class="flex items-center justify-between  p-4">
       <h2 [id]="titleId" class="text-xl font-semibold text-gray-900">
         <ng-content select="[modal-title]"></ng-content>
       </h2>
@@ -22,7 +22,7 @@
       <ng-content select="[modal-content]"></ng-content>
     </div>
 
-    <div class="border-t p-4 flex justify-end gap-2">
+    <div class="p-4 flex justify-end gap-2">
       <ng-content select="[modal-actions]"></ng-content>
     </div>
 

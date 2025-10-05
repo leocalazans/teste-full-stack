@@ -91,5 +91,5 @@ Route::post('/debug/login-test', function (Request $request) {
 
 Route::resource('clinics', 'ClinicController', ['only' => ['index', 'store', 'show', 'update', 'destroy']]);
 
-// Endpoint para carregar as especialidades (para o seu front-end)
 Route::get('specialties', 'SpecialtyController@index');
+Route::get('regions', 'RegionController@index');

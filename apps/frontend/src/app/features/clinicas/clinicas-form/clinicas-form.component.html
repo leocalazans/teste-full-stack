@@ -1,6 +1,6 @@
-<div class="flex flex-col sm:gap-4 sm:py-4 sm:pl-14 bg-gray-50 min-h-screen">
+<div class="pt-[52px] flex flex-col sm:gap-4 sm:py-4 sm:pl-14 bg-gray-50 min-h-screen">
 
-  <main class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 max-w-5xl mx-auto w-full">
+  <main class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mx-auto w-full">
     <div class="rounded-lg border border-gray-100 p-10 bg-card text-card-foreground shadow-xl">
       <div class="flex flex-col space-y-1.5 p-10">
         <div class="text-2xl font-bold leading-none tracking-tight text-primary">{{ cardTitle() }}</div>
@@ -16,24 +16,24 @@
 
             <!-- Razão Social -->
             <div class="space-y-2">
-              <label class="text-sm font-medium leading-none" for="corporateName">Razão Social *</label>
-              <input formControlName="corporateName" type="text"
+              <label class="text-sm font-medium leading-none" for="corporate_name">Razão Social *</label>
+              <input formControlName="corporate_name" type="text"
                 class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Clínica Médica Exemplo LTDA" id="corporateName">
-              @if (clinicForm.controls.corporateName.invalid && (clinicForm.controls.corporateName.dirty ||
-              clinicForm.controls.corporateName.touched)) {
+                placeholder="Clínica Médica Exemplo LTDA" id="corporate_name">
+              @if (clinicForm.controls.corporate_name.invalid && (clinicForm.controls.corporate_name.dirty ||
+              clinicForm.controls.corporate_name.touched)) {
               <p class="text-red-500 text-xs mt-1">Razão Social é obrigatória.</p>
               }
             </div>
 
             <!-- Nome Fantasia -->
             <div class="space-y-2">
-              <label class="text-sm font-medium leading-none" for="fantasyName">Nome Fantasia *</label>
-              <input formControlName="fantasyName" type="text"
+              <label class="text-sm font-medium leading-none" for="fantasy_name">Nome Fantasia *</label>
+              <input formControlName="fantasy_name" type="text"
                 class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Clínica Exemplo" id="fantasyName">
-              @if (clinicForm.controls.fantasyName.invalid && (clinicForm.controls.fantasyName.dirty ||
-              clinicForm.controls.fantasyName.touched)) {
+                placeholder="Clínica Exemplo" id="fantasy_name">
+              @if (clinicForm.controls.fantasy_name.invalid && (clinicForm.controls.fantasy_name.dirty ||
+              clinicForm.controls.fantasy_name.touched)) {
               <p class="text-red-500 text-xs mt-1">Nome Fantasia é obrigatório.</p>
               }
             </div>
@@ -57,8 +57,8 @@
                 class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 id="regional">
                 <option value="" disabled>Selecione uma regional</option>
-                @for (region of regions(); track region.value) {
-                <option [value]="region.value">{{ region.label }}</option>
+                @for (region of regions(); track region.id) {
+                <option [value]="region.id">{{ region.label }}</option>
                 }
               </select>
               @if (clinicForm.controls.regional.invalid && (clinicForm.controls.regional.dirty ||
@@ -69,10 +69,10 @@
 
             <!-- Data de Inauguração (Input Type Date) -->
             <div class="space-y-2 flex flex-col">
-              <label class="text-sm font-medium leading-none" for="inaugurationDate">Data de Inauguração</label>
-              <input formControlName="inaugurationDate" type="date"
+              <label class="text-sm font-medium leading-none" for="inauguration_date">Data de Inauguração</label>
+              <input formControlName="inauguration_date" type="date"
                 class="flex h-10 px-4 py-2 w-full rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground text-left font-normal"
-                id="inaugurationDate">
+                id="inauguration_date">
             </div>
 
             <!-- Especialidades Médicas Atendidas (Simulação de Multi-Select/Tags) -->
@@ -82,10 +82,10 @@
                 class="group rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                 <div class="flex flex-wrap gap-2">
                   <!-- Tags Selecionadas -->
-                  @for (specialty of clinicForm.controls.specialties.value; track specialty) {
+                  @for (specialty of clinicForm.controls.specialties.value; track specialty.id) {
                   <span
                     class="flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-1 text-xs font-medium">
-                    {{ specialty }}
+                    {{ specialty.name }}
                     <button type="button" (click)="removeSpecialty(specialty)"
                       class="text-primary/70 hover:text-primary">
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -101,9 +101,9 @@
                   <select (change)="addSpecialty($event)"
                     class="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground min-w-40 h-8">
                     <option value="" disabled selected>Selecione as especialidades</option>
-                    @for (specialty of availableSpecialties(); track specialty) {
-                    <option [value]="specialty" [disabled]="isSpecialtySelected(specialty)">
-                      {{ specialty }}
+                    @for (specialty of availableSpecialties(); track specialty.id) {
+                    <option [value]="specialty.id" [disabled]="isSpecialtySelected(specialty)">
+                      {{ specialty.name }}
                     </option>
                     }
                   </select>
@@ -114,21 +114,21 @@
             <!-- Ativa/Inativa (Checkbox) -->
             <div
               class="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-gray-50/50 col-span-1 md:col-span-2">
-              <input formControlName="isActive" type="checkbox" id="isActive"
+              <input formControlName="is_active" type="checkbox" id="is_active"
                 class="h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground">
               <div class="space-y-1 leading-none">
                 <label
                   class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  for="isActive">Ativa</label>
+                  for="is_active">Ativa</label>
                 <p class="text-xs text-muted-foreground">Marque para tornar a clínica ativa no sistema.</p>
               </div>
             </div>
           </div>
 
           <!-- BOTÕES DE AÇÃO -->
-          <div class="flex justify-end gap-2 border-t pt-6">
-            <button type="button"
-              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+          <div class="flex justify-end gap-2 pt-6">
+            <button type="button" (click)="goToCancel()"
+              class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
               Cancelar
             </button>
             <button type="submit" [disabled]="clinicForm.invalid"
@@ -136,12 +136,12 @@
               {{ submitButtonText() }}
             </button>
           </div>
-
+          <!--
           <pre class="mt-4 p-4 text-xs bg-gray-800 text-white rounded-lg overflow-auto">
                 <h3 class="font-bold mb-2">DEBUG: Modo {{ isEditing() ? 'Edição (ID: ' + clinicData()?.id + ')' : 'Criação' }}</h3>
                 Formulário Válido: {{ clinicForm.valid }}
                 Dados do Formulário: {{ clinicForm.value | json }}
-              </pre>
+              </pre> -->
         </form>
       </div>
     </div>

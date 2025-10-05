@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, computed, signal, inject, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, signal, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -7,28 +7,20 @@ import {
   ReactiveFormsModule,
   FormControl
 } from '@angular/forms';
+import { clinicasStore } from '../clinic.store';
+import { Region, Specialty, Clinic } from '../clinicas.model';
+import { ClinicasService } from '../clinicas.service';
+import { Router } from '@angular/router';
+import { ToastService } from '../../toast/toast.service';
 
-// 1. Interface de Dados da Clínica
-export interface Clinic {
-  id?: string; // Adicionado ID para edição
-  corporateName: string;
-  fantasyName: string;
-  cnpj: string;
-  regional: string;
-  inaugurationDate: string | null;
-  specialties: string[];
-  isActive: boolean;
-}
-
-// Tipagem para o objeto de formulário
 interface ClinicForm {
-  corporateName: FormControl<string | null>;
-  fantasyName: FormControl<string | null>;
+  corporate_name: FormControl<string | null>;
+  fantasy_name: FormControl<string | null>;
   cnpj: FormControl<string | null>;
   regional: FormControl<string | null>;
-  inaugurationDate: FormControl<string | null>;
-  specialties: FormControl<string[] | null>;
-  isActive: FormControl<boolean | null>;
+  inauguration_date: FormControl<string | null>;
+  specialties: FormControl<Specialty[] | null>;
+  is_active: FormControl<boolean | null>;
 }
 
 @Component({
@@ -41,114 +33,152 @@ interface ClinicForm {
 })
 export class ClinicasFormComponent {
   private fb = inject(FormBuilder);
+  private clinicasStore = inject(clinicasStore);
+  private ClinicasService = inject(ClinicasService);
+  private router = inject(Router);
+  private toastService = inject(ToastService);
 
-  // 2. INPUT para receber os dados da clínica para edição. undefined para criação.
-  clinicData = input<Clinic | undefined>(undefined);
+  // Estado global
+  clinicData = this.clinicasStore.selectedClinic;
 
-  // 3. Sinais Calculados para textos dinâmicos
+  // Textos dinâmicos
   isEditing = computed(() => !!this.clinicData());
-  cardTitle = computed(() => this.isEditing() ? 'Editar Clínica' : 'Nova Clínica');
-  cardSubtitle = computed(() => this.isEditing() ? 'Altere os dados da clínica abaixo.' : 'Preencha os dados abaixo para cadastrar uma nova clínica.');
-  submitButtonText = computed(() => this.isEditing() ? 'Salvar Alterações' : 'Criar Clínica');
-
-  // Mock de Dados para Dropdown
-  regions = signal([
-    { value: '', label: 'Selecione uma regional' },
-    { value: 'alto_tiete', label: 'Alto Tietê' },
-    { value: 'interior', label: 'Interior' },
-    { value: 'sp', label: 'São Paulo' },
-    { value: 'rj', label: 'Rio de Janeiro' },
-    { value: 'mg', label: 'Minas Gerais' },
-    { value: 'nacional', label: 'Nacional' },
-  ]);
-
+  cardTitle = computed(() => this.isEditing() ? 'Editar clínica' : 'Nova clínica');
+  cardSubtitle = computed(() => this.isEditing() ? 'Altere os dados da clínica abaixo.' : 'Preencha os dados para cadastrar uma nova clínica.');
+  submitButtonText = computed(() => this.isEditing() ? 'Salvar alterações' : 'Criar clínica');
+  // // Mock de Dados para Dropdown
+  regions = signal<Region[]>([]);
   // Mock de Dados para Multi-Select
-  availableSpecialties = signal([
-    'Clínica Geral',
-    'Cardiologia',
-    'Dermatologia',
-    'Pediatria',
-    'Ortopedia',
-    'Ginecologia',
-  ]);
+  availableSpecialties = signal<Specialty[]>([]);
+
+  fetchRegions = effect(() => {
+    this.ClinicasService.getRegions().subscribe({
+      next: (data) => this.regions.set(data),
+      error: (err) => console.error('Erro ao buscar regiões', err),
+    });
+  })
+
+  fetchAvailableSpecialties = effect(() => {
+    this.ClinicasService.getSpecialties().subscribe({
+      next: (data) => this.availableSpecialties.set(data),
+      error: (err) => console.error('Erro ao buscar regiões', err),
+    });
+  })
+
 
   // Inicialização do Formulário Reativo
-  clinicForm: FormGroup<ClinicForm>;
+  clinicForm: FormGroup<ClinicForm> = this.fb.group<ClinicForm>({
+    corporate_name: this.fb.control('', { validators: [Validators.required], nonNullable: true }),
+    fantasy_name: this.fb.control('', { validators: [Validators.required], nonNullable: true }),
+    cnpj: this.fb.control('', { validators: [Validators.required], nonNullable: true }),
+    regional: this.fb.control('', { validators: [Validators.required], nonNullable: true }),
+    inauguration_date: this.fb.control(null),
+    specialties: this.fb.control<Specialty[] | null>([]),
+    is_active: this.fb.control(true, { nonNullable: true }),
+  });
 
-  constructor() {
-    this.clinicForm = this.fb.group<ClinicForm>({
-      corporateName: this.fb.control('', { validators: [Validators.required, Validators.maxLength(100)], nonNullable: true }),
-      fantasyName: this.fb.control('', { validators: [Validators.required, Validators.maxLength(100)], nonNullable: true }),
-      cnpj: this.fb.control('', { validators: [Validators.required, Validators.pattern(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/)], nonNullable: true }),
-      regional: this.fb.control('', { validators: [Validators.required], nonNullable: true }),
-      inaugurationDate: this.fb.control(null, { nonNullable: false }),
-      specialties: this.fb.control([], { nonNullable: true }),
-      isActive: this.fb.control(true, { nonNullable: true }),
-    });
-
-    // 4. Carrega os dados se estiver em modo de edição
-    if (this.clinicData()) {
-      const data = this.clinicData()!;
+  _syncEffect = effect(() => {
+    const clinic = this.clinicData();
+    if (clinic) {
       this.clinicForm.patchValue({
-        corporateName: data.corporateName,
-        fantasyName: data.fantasyName,
-        cnpj: data.cnpj,
-        regional: data.regional,
-        // Garante que o formato da data é 'YYYY-MM-DD' para o input type="date"
-        inaugurationDate: data.inaugurationDate,
-        specialties: data.specialties,
-        isActive: data.isActive,
+        corporate_name: clinic.corporate_name,
+        fantasy_name: clinic.fantasy_name,
+        cnpj: clinic.cnpj,
+        regional: clinic.regional,
+        inauguration_date: clinic.inauguration_date,
+        specialties: clinic.specialties,
+        is_active: clinic.is_active ? true : false,
       });
-      console.log('Modo Edição ativado. Formulário preenchido.');
     } else {
-      console.log('Modo Criação ativado.');
+      this.clinicForm.reset({ is_active: true, specialties: [] });
     }
-  }
+  });
+
 
   // Lógica para adicionar especialidade ao multi-select
   addSpecialty(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
-    const specialty = selectElement.value;
+    const specialtyID = selectElement.value;
+    console.log(' Selected Specialty:', specialtyID);
+    if (!specialtyID) return;
 
-    if (specialty && !this.isSpecialtySelected(specialty)) {
-      const currentSpecialties = this.clinicForm.controls.specialties.value || [];
-      this.clinicForm.controls.specialties.setValue([...currentSpecialties, specialty]);
-
-      selectElement.value = '';
+    const specialtyObj = this.availableSpecialties().find(s => s.id === specialtyID);
+    if (!specialtyObj) return;
+    console.log(' Specialty Object:', specialtyObj);
+    const currentSpecialties: Specialty[] = this.clinicForm.controls.specialties.value || [];
+    if (!currentSpecialties.some(s => s.id === specialtyObj.id)) {
+      this.clinicForm.controls.specialties.setValue([...currentSpecialties, specialtyObj]);
     }
+
+    selectElement.value = '';
   }
 
-  // Lógica para remover especialidade do multi-select
-  removeSpecialty(specialty: string): void {
-    const currentSpecialties = this.clinicForm.controls.specialties.value || [];
-    const updatedSpecialties = currentSpecialties.filter(s => s !== specialty);
+  // Remove uma especialidade pelo id
+  removeSpecialty(specialty: Specialty): void {
+    const currentSpecialties: Specialty[] = this.clinicForm.controls.specialties.value || [];
+    const updatedSpecialties = currentSpecialties.filter(s => s.id !== specialty.id);
     this.clinicForm.controls.specialties.setValue(updatedSpecialties);
   }
 
-  // Verifica se a especialidade já foi selecionada para desabilitar a opção
-  isSpecialtySelected(specialty: string): boolean {
-    return (this.clinicForm.controls.specialties.value || []).includes(specialty);
+  // Verifica se a especialidade já foi selecionada pelo id
+  isSpecialtySelected(specialty: Specialty): boolean {
+    const currentSpecialties: Specialty[] = this.clinicForm.controls.specialties.value || [];
+    return currentSpecialties.some(s => s.id === specialty.id);
   }
 
+  goToCancel() {
+    this.router.navigate(['/dashboard/clinicas']); // rota interna do Angular
+  }
 
   onSubmit(): void {
-    if (this.clinicForm.valid) {
-      const formData = this.clinicForm.value;
-
-      if (this.isEditing()) {
-        const clinicId = this.clinicData()!.id;
-        console.log(`[EDIÇÃO] Enviando atualização para a clínica ID: ${clinicId}`, formData);
-        // Exemplo: this.clinicService.update(clinicId, formData);
-        // alert(`Clínica ${clinicId} atualizada com sucesso!`);
-      } else {
-        console.log('[CRIAÇÃO] Enviando nova clínica:', formData);
-        // Exemplo: this.clinicService.create(formData);
-        // alert('Nova clínica cadastrada com sucesso!');
-        this.clinicForm.reset({ isActive: true, specialties: [] });
-      }
-    } else {
-      console.error('Formulário Inválido. Verifique os campos obrigatórios.');
+    if (!this.clinicForm.valid) {
       this.clinicForm.markAllAsTouched();
+      return;
+    }
+
+    const formData = this.clinicForm.value;
+    if (this.isEditing()) {
+      this.ClinicasService.update(this.clinicData()!.id, formData as Partial<Clinic>).subscribe({
+        next: (updatedClinic) => {
+          console.log('Clínica atualizada com sucesso:', updatedClinic);
+          // Atualiza a clínica no estado global
+          this.clinicasStore.setClinics(
+            this.clinicasStore.clinics().map(clinic =>
+              clinic.id === updatedClinic.id ? updatedClinic : clinic)
+          );
+          this.toastService.show('Clínica atualizada com sucesso!', 'success');
+          this.clinicasStore.clearSelectedClinic();
+          this.clinicForm.reset({ is_active: true, specialties: [] });
+          this.router.navigate([`/dashboard/clinica/${updatedClinic.id}`]);
+        },
+        error: (err) => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+          this.toastService.show('Erro ao atualizar clínica!', 'error');
+          console.error('Erro ao atualizar clínica:', err);
+        }
+      });
+
+    } else {
+      this.ClinicasService.create(formData as Partial<Clinic>).subscribe({
+        next: (newClinic) => {
+          console.log('Clínica criada com sucesso:', newClinic);
+          this.toastService.show('Clínica criada com sucesso!', 'success');
+          this.clinicForm.reset({ is_active: true, specialties: [] });
+          this.router.navigate([`/dashboard/clinica/${newClinic.id}`]);
+        },
+        error: (err) => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+          this.toastService.show('Erro ao criar clínica!', 'error');
+          console.error('Erro ao criar clínica:', err)
+        }
+      });
+
     }
   }
 }

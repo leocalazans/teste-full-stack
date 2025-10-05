@@ -1,5 +1,5 @@
-<main class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-  <div class="space-y-6">
+<main class=" grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+  <div class="pt-[42px] space-y-6">
 
     <div class="flex items-center">
       <div class="flex-1">
@@ -116,12 +116,12 @@
       <div class="space-x-2">
         <span class="text-sm font-medium text-gray-700">Página {{ currentPage() }} de {{ totalPages() }}</span>
         <button (click)="prevPage()" [disabled]="currentPage() === 1"
-          class="inline-flex items-center justify-center gap-2 text-sm font-medium border border-input bg-background rounded-md px-3 h-9 disabled:opacity-50">
+          class="cursor-pointer inline-flex items-center justify-center gap-2 text-sm font-medium border border-input bg-background rounded-md px-3 h-9 disabled:opacity-50">
           Anterior
         </button>
 
         <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
-          class="inline-flex items-center justify-center gap-2 text-sm font-medium border border-input bg-background rounded-md px-3 h-9 disabled:opacity-50">
+          class="cursor-pointer inline-flex items-center justify-center gap-2 text-sm font-medium border border-input bg-background rounded-md px-3 h-9 disabled:opacity-50">
           Próximo
         </button>
       </div>

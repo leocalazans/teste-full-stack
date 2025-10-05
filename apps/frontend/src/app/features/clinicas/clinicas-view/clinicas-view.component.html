@@ -1,5 +1,5 @@
 <main class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 bg-gray-50 min-h-screen">
-  <div class="space-y-6 max-w-4xl mx-auto w-full pt-8">
+  <div class="pt-[42px] space-y-6 mx-auto w-full pt-8">
 
     <!-- Header e Título -->
     <div class="flex items-center gap-4">
@@ -114,7 +114,7 @@
               </svg>
               <span>Regional</span>
             </div>
-            <div class="text-lg font-semibold text-gray-900">{{ clinic()?.regional }}</div>
+            <div class="text-lg font-semibold text-gray-900">{{ clinic()?.regional_name }}</div>
           </div>
 
           <!-- Data de Inauguração (inaugurationDate) -->
@@ -158,16 +158,15 @@
         <div>
           <h3 class="text-lg font-medium mb-4 text-gray-700">Especialidades Médicas</h3>
           <div class="flex flex-wrap gap-3 items-center">
-            @for (specialty of clinic()?.specialties; track specialty) {
+            @for (specialty of (clinic()?.specialties ?? []) | slice:0:5; track specialty.id) {
             <div
               class="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 shadow-sm">
-              {{ specialty }}
+              {{ specialty.name }}
             </div>
             }
 
-            <!-- Botão Adicionar Especialidade -->
-            <button (click)="addSpecialty()"
-              class="inline-flex items-center justify-center gap-2 text-sm font-medium transition-colors hover:bg-gray-200 h-8 w-8 rounded-full border border-dashed border-gray-400 text-gray-600"
+            <button *ngIf="(clinic()?.specialties ?? []).length > 5" (click)="showAllSpecialty()"
+              class="cursor-pointer inline-flex items-center justify-center gap-2 text-sm font-medium transition-colors hover:bg-gray-200 h-8 w-8 rounded-full border border-dashed border-gray-400 text-gray-600"
               type="button" aria-label="Adicionar Especialidade">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -183,11 +182,11 @@
       <!-- Rodapé do Cartão: Botões de Ação -->
       <div class="flex justify-end gap-3 p-6 pt-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
         <button (click)="goBack()"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-gray-300 bg-white hover:bg-gray-100 h-10 px-4 py-2 shadow-sm text-gray-700">
+          class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-gray-300 bg-white hover:bg-gray-100 h-10 px-4 py-2 shadow-sm text-gray-700">
           Voltar
         </button>
         <button (click)="editClinic()"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors bg-indigo-600 text-white hover:bg-indigo-700 h-10 px-4 py-2 shadow-md">
+          class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors bg-indigo-600 text-white hover:bg-indigo-700 h-10 px-4 py-2 shadow-md">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
             class="lucide lucide-square-pen mr-1 h-4 w-4">
@@ -210,5 +209,16 @@
     </div>
     }
 
+    <app-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+      <div modal-title>Especialidades da Clínica</div>
+      <div modal-content>
+        @for (specialty of (clinic()?.specialties ?? []) ; track specialty.id) {
+        <div
+          class="inline-flex items-center gap-7 mb-2 ml-2 rounded-full border border-gray-300 bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 shadow-sm">
+          {{ specialty.name }}
+        </div>
+        }
+      </div>
+    </app-modal>
   </div>
 </main>

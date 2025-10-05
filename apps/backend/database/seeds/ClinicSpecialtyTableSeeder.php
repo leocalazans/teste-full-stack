@@ -15,6 +15,11 @@ class ClinicSpecialtyTableSeeder extends Seeder
         $relations = [
             ['clinic' => 'Saúde Total', 'specialties' => ['Cardiologia', 'Dermatologia']],
             ['clinic' => 'Bem Viver',   'specialties' => ['Pediatria', 'Ortopedia', 'Ginecologia']],
+            [
+                'clinic' => 'Vida Plena',  
+                'specialties' => ['Neurologia', 'Psiquiatria', 'Oftalmologia', 'Endocrinologia', 'Gastroenterologia', 'Urologia', 'Alergista']
+            ],
+
         ];
 
         foreach ($relations as $relation) {

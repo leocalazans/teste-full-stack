@@ -57,7 +57,7 @@ export class LoginComponent {
     const { email, password } = this.form.value;
 
     this.auth.login(email!, password!).pipe(
-      tap(() => this.router.navigateByUrl('/dashboard')),
+      tap(() => this.router.navigateByUrl('/dashboard/clinicas')),
       catchError((err: any) => {
         // Agora err vem do HttpErrorResponse
         this.error = err?.error?.message ?? 'Credenciais inválidas. Tente novamente.';

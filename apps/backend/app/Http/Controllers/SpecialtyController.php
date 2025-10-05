@@ -12,9 +12,7 @@ class SpecialtyController extends Controller
      */
     public function index()
     {
-        $specialties = Specialty::all(['id as value', 'name as label']);
-
-        // O seu frontend espera um array, vamos retornar isso.
+        $specialties = Specialty::all();
         return response()->json($specialties);
     }
 }

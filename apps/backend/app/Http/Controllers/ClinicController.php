@@ -5,40 +5,68 @@ namespace App\Http\Controllers;
 use App\Clinic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str; // Para usar UUIDs
+use Illuminate\Validation\Rule;
+use Ramsey\Uuid\Uuid;
+use Illuminate\Http\JsonResponse;
 
 class ClinicController extends Controller
 {
-    // ... Métodos de Validação, Helpers, etc ...
-
     /**
      * Helper para obter os dados validados.
      */
     protected function validateData(Request $request, $isUpdate = false)
     {
+        $data = $request->json()->all();
+
+        // Se specialties vier como array de objetos, extrai só os IDs
+        if (!empty($data['specialties']) && is_array($data['specialties'])) {
+            $data['specialties'] = collect($data['specialties'])
+                ->map(function ($item) {
+                    return is_array($item) && isset($item['id']) ? $item['id'] : $item;
+                })
+                ->filter()
+                ->toArray();
+        } else {
+            $data['specialties'] = [];
+        }
+
+        // Valida se cada specialty existe na tabela
+        foreach ($data['specialties'] as $specialtyId) {
+            $exists = \DB::table('specialties')->where('id', $specialtyId)->exists();
+            if (!$exists) {
+                return response()->json(['errors' => ["specialties" => ["Especialidade inválida: $specialtyId"]]], 422);
+            }
+        }
+
         $rules = [
-            'corporateName' => 'required|string|max:255',
-            'fantasyName' => 'required|string|max:255',
-            'cnpj' => 'required|string|size:14|unique:clinics,cnpj' . ($isUpdate ? ',' . $request->route('clinic') : ''),
-            'regional' => 'required|string|max:100',
-            'inaugurationDate' => 'nullable|date',
-            'isActive' => 'boolean',
-            'specialties' => 'required|array',
-            'specialties.*' => 'required|uuid|exists:specialties,id', // Valida se é um UUID e existe
+            'corporate_name'    => 'required|string|max:255',
+            'fantasy_name'      => 'required|string|max:255',
+            'cnpj'              => [
+                'required',
+                'string',
+                'size:14',
+                $isUpdate
+                    ? \Illuminate\Validation\Rule::unique('clinics', 'cnpj')->ignore($request->route('clinic')->id)
+                    : \Illuminate\Validation\Rule::unique('clinics', 'cnpj'),
+            ],
+            'regional'          => 'required|string|exists:regions,id',
+            'inauguration_date' => 'nullable|date',
+            'is_active'         => 'boolean',
+            'specialties'       => 'required|array|min:1',
+            'specialties.*'     => 'required|string|size:36',
         ];
 
-        // Mapeia os campos do front-end (camelCase) para o DB (snake_case)
-        $validatedData = $request->validate($rules);
-        $dbData = [
-            'corporate_name' => $validatedData['corporateName'],
-            'fantasy_name' => $validatedData['fantasyName'],
-            'cnpj' => $validatedData['cnpj'],
-            'regional' => $validatedData['regional'],
-            'inauguration_date' => $validatedData['inaugurationDate'] ?? null,
-            'is_active' => $validatedData['isActive'] ?? true,
-        ];
+        $validator = validator($data, $rules);
 
-        return array_merge($dbData, ['specialties' => $validatedData['specialties']]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        return $data;
     }
+
+
+
 
     // --- Métodos do CRUD ---
 
@@ -48,26 +76,29 @@ class ClinicController extends Controller
     public function index()
     {
         // Carrega as especialidades para retornar no objeto completo
-        $clinics = Clinic::with('specialties')->get();
+        $clinics = Clinic::with('specialties','region')->get();
         return response()->json($clinics);
     }
 
     /**
      * POST /api/clinics - Cria uma nova Clínica.
      */
-    public function store(Request $request)
+    public function store(Request $request) 
     {
         $data = $this->validateData($request);
 
-        // Gera o UUID para o Laravel 5.4, se não estiver usando um Trait
-        $data['id'] = (string) Str::uuid(); 
-        
+        if ($data instanceof JsonResponse) {
+            return $data; 
+        }
+    
+        $specialties = $data['specialties'];
+        unset($data['specialties']);
+
+        $data['id'] = Uuid::uuid4()->toString(); 
         $clinic = Clinic::create($data);
-        
-        // Sincroniza as especialidades (o attach/sync espera um array de IDs)
-        $clinic->specialties()->sync($data['specialties']);
-        
-        // Recarrega para ter as especialidades no objeto de retorno
+
+        $clinic->specialties()->sync($specialties);
+
         return response()->json($clinic->load('specialties'), 201);
     }
 
@@ -76,7 +107,7 @@ class ClinicController extends Controller
      */
     public function show(Clinic $clinic)
     {
-        return response()->json($clinic->load('specialties'));
+        return response()->json($clinic->load('specialties', 'region'));
     }
 
     /**
@@ -84,16 +115,24 @@ class ClinicController extends Controller
      */
     public function update(Request $request, Clinic $clinic)
     {
-        // Passa true para indicar que é uma atualização (para a validação unique do CNPJ)
         $data = $this->validateData($request, true);
-        
+
+        if (!$data || !is_array($data)) {
+            return response()->json(['error' => 'Dados inválidos ou não enviados'], 422);
+        }
+        // Separa os specialties do resto
+        $specialties = $data['specialties'] ?? [];
+        unset($data['specialties']);
+
+        // Atualiza só os campos da clínica
         $clinic->update($data);
-        
-        // Sincroniza (adiciona/remove) as especialidades
-        $clinic->specialties()->sync($data['specialties']);
+
+        // Atualiza a pivot specialties
+        $clinic->specialties()->sync($specialties);
 
         return response()->json($clinic->load('specialties'));
     }
+
 
     /**
      * DELETE /api/clinics/{clinic} - Remove uma Clínica.

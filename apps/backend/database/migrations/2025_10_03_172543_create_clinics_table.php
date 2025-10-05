@@ -7,16 +7,21 @@ use Illuminate\Database\Migrations\Migration;
 class CreateClinicsTable extends Migration
 {
     public function up()
-    {
+   {
         Schema::create('clinics', function (Blueprint $table) {
-            $table->uuid('id')->primary(); // Usando UUID como chave primária
-            $table->string('corporate_name'); // corporateName
-            $table->string('fantasy_name');   // fantasyName
+            $table->uuid('id')->primary();
+            $table->string('corporate_name');
+            $table->string('fantasy_name');
             $table->string('cnpj')->unique();
-            $table->string('regional');
-            $table->date('inauguration_date')->nullable(); // inaugurationDate
-            $table->boolean('is_active')->default(true); // isActive
+            $table->uuid('regional'); 
+            $table->date('inauguration_date')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
+
+            $table->foreign('regional')
+                  ->references('id')
+                  ->on('regions')
+                  ->onDelete('restrict'); // ou cascade
         });
     }
 
