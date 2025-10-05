@@ -40,18 +40,17 @@ export class ClinicasListComponent {
   searchTerm = signal('');
 
   // 3. PAGINAÇÃO (Sinais para controlar o estado da paginação)
-  pageSize = signal(5);
+  pageSize = signal(10);
   currentPage = signal(1);
 
   sortState = signal<SortState>({ column: 'inauguration_date', direction: 'desc' });
 
   // Função utilitária para converter dd/mm/aaaa para um objeto Date.
-  // IMPORTANTE: Esta é a forma padrão. Se você pudesse usar a Temporal API,
-  // usaria Temporal.PlainDate.from('aaaa-mm-dd') para melhor precisão.
+
+  //  Temporal.PlainDate.from('aaaa-mm-dd') para melhor precisão.
   private parseDate(dateStr: string): Date {
     const [day, month, year] = dateStr.split('/');
     // Cria a data no formato aaaa-mm-dd (ISO) para evitar problemas de fuso horário local.
-    // Mês é base 0 no JavaScript, então month - 1.
     return new Date(`${year}-${month}-${day}`);
   }
 
