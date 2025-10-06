@@ -1,88 +1,108 @@
 import { TestBed } from '@angular/core/testing';
-import { Router, UrlTree, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router'; // Adicionado ActivatedRouteSnapshot, RouterStateSnapshot
-import { of, Observable } from 'rxjs'; // Adicionado Observable para tipagem clara
-import { catchError } from 'rxjs/operators';
+import { Router, UrlTree, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
+import { take } from 'rxjs/operators';
+
 import { AuthGuard } from './auth.guard';
 import { AuthService, User } from '../features/auth/auth.service';
 
-// Mock do AuthService
-const mockUser: User = { id: '1', name: 'Test', email: 't@example.com' } as User;
-const mockAuthServiceWithUser = { currentUser$: of(mockUser) };
-const mockAuthServiceWithoutUser = { currentUser$: of(null) };
-// Cria um Observable que simula um erro para testar o catchError
-const mockAuthServiceWithError = {
-  currentUser$: new Observable<User | null>(observer => {
-    observer.error(new Error('Auth Error'));
-  }).pipe(catchError(() => of(null)))
-};
+// --- Mocks ---
 
-// Mocks para os argumentos obrigatórios do Functional Guard
-const mockRoute = {} as ActivatedRouteSnapshot;
-const mockState = {} as RouterStateSnapshot;
+// Mock para o User
+const mockUser: User = { id: 'user-1', name: 'Test User', email: 'test@app.com' };
 
-describe('AuthGuard (Functional)', () => {
-  let routerSpy: jasmine.SpyObj<Router>;
+// Mock do AuthService usando getter (forma recomendada)
+class MockAuthService {
+  private _subject = new BehaviorSubject<User | null>(null);
+
+  // Getter que expõe o observable sem permitir mutação externa
+  get currentUser$(): Observable<User | null> {
+    return this._subject.asObservable();
+  }
+
+  loginUser(user: User | null): void {
+    this._subject.next(user);
+  }
+}
+
+// Mock do Router
+class MockRouter {
+  parseUrl(url: string): UrlTree {
+    // Retorna um objeto simplificado que simula o UrlTree
+    return ({ path: url } as unknown) as UrlTree;
+  }
+}
+
+describe('AuthGuard', () => {
+  let authService: MockAuthService;
+  let router: MockRouter;
+  let route: ActivatedRouteSnapshot;
+  let state: RouterStateSnapshot;
 
   beforeEach(() => {
-    // 1. Cria o Spy para o Router e simula o parseUrl para retornar um objeto UrlTree
-    routerSpy = jasmine.createSpyObj('Router', ['parseUrl']);
-    routerSpy.parseUrl.and.callFake((url: string) => new UrlTree());
-  });
-
-  it('deve permitir a ativação (return true) quando o usuário está autenticado', (done) => {
     TestBed.configureTestingModule({
       providers: [
-        { provide: Router, useValue: routerSpy },
-        { provide: AuthService, useValue: mockAuthServiceWithUser }
+        { provide: AuthService, useClass: MockAuthService },
+        { provide: Router, useClass: MockRouter },
+        { provide: ActivatedRouteSnapshot, useValue: {} },
+        { provide: RouterStateSnapshot, useValue: {} }
       ]
     });
 
-    // 2. Chama a função de guarda com os argumentos mockados (resolve o erro 2554)
-    const result = TestBed.runInInjectionContext(() => AuthGuard(mockRoute, mockState));
+    authService = TestBed.inject(AuthService) as unknown as MockAuthService;
+    router = TestBed.inject(Router) as unknown as MockRouter;
+    route = TestBed.inject(ActivatedRouteSnapshot);
+    state = TestBed.inject(RouterStateSnapshot);
 
-    // 3. Tipagem explícita para 'res' e conversão para Observable (resolve os erros de 'subscribe' e 'implicit any')
-    (result as Observable<boolean | UrlTree>).subscribe((res: boolean | UrlTree) => {
-      expect(res).toBeTrue();
-      expect(routerSpy.parseUrl).not.toHaveBeenCalled();
-      done();
+    // Garante estado inicial limpo
+    authService.loginUser(null);
+  });
+
+  // --- Cenário 1: Usuário autenticado ---
+  it('should return TRUE if the user is logged in', (done) => {
+    authService.loginUser(mockUser);
+
+    TestBed.runInInjectionContext(() => {
+      (AuthGuard(route, state) as Observable<boolean | UrlTree>)
+        .pipe(take(1))
+        .subscribe(result => {
+          expect(result).toBeTrue();
+          done();
+        });
     });
   });
 
-  it('deve redirecionar (return UrlTree) quando o usuário NÃO está autenticado', (done) => {
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: Router, useValue: routerSpy },
-        { provide: AuthService, useValue: mockAuthServiceWithoutUser }
-      ]
-    });
+  // --- Cenário 2: Usuário não autenticado ---
+  it('should return a UrlTree to login (/) if the user is NOT logged in', (done) => {
+    authService.loginUser(null);
+    const expectedUrlTree = router.parseUrl('/');
 
-    // Chama a função de guarda com os argumentos mockados
-    const result = TestBed.runInInjectionContext(() => AuthGuard(mockRoute, mockState));
-
-    // Tipagem explícita e conversão
-    (result as Observable<boolean | UrlTree>).subscribe((res: boolean | UrlTree) => {
-      expect(routerSpy.parseUrl).toHaveBeenCalledWith('/');
-      expect(res instanceof UrlTree).toBeTrue();
-      done();
+    TestBed.runInInjectionContext(() => {
+      (AuthGuard(route, state) as Observable<boolean | UrlTree>)
+        .pipe(take(1))
+        .subscribe(result => {
+          expect(result).toEqual(expectedUrlTree);
+          done();
+        });
     });
   });
 
-  it('deve redirecionar (return UrlTree) em caso de erro no stream de autenticação', (done) => {
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: Router, useValue: routerSpy },
-        { provide: AuthService, useValue: mockAuthServiceWithError }
-      ]
-    });
+  // --- Cenário 3: Erro no stream de autenticação ---
+  it('should return a UrlTree to login (/) if the auth stream errors', (done) => {
+    // Substitui o Observable por um erro
+    spyOnProperty(authService, 'currentUser$', 'get').and.returnValue(
+      throwError(() => new Error('Auth stream failed'))
+    );
 
-    // Chama a função de guarda com os argumentos mockados
-    const result = TestBed.runInInjectionContext(() => AuthGuard(mockRoute, mockState));
+    const expectedUrlTree = router.parseUrl('/');
 
-    // Tipagem explícita e conversão
-    (result as Observable<boolean | UrlTree>).subscribe((res: boolean | UrlTree) => {
-      expect(routerSpy.parseUrl).toHaveBeenCalledWith('/');
-      expect(res instanceof UrlTree).toBeTrue();
-      done();
+    TestBed.runInInjectionContext(() => {
+      (AuthGuard(route, state) as Observable<boolean | UrlTree>)
+        .pipe(take(1))
+        .subscribe(result => {
+          expect(result).toEqual(expectedUrlTree);
+          done();
+        });
     });
   });
 });
