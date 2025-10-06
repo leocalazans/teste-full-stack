@@ -1,0 +1,130 @@
+/* src/styles.css (topo) */
+/* Tailwind 4 import */
+@import "tailwindcss";
+
+@theme {
+  /* CORES: Mapeando suas cores principais para o namespace --color- */
+  --color-primary: #61c1d0;
+  /* Gera: bg-primary, text-primary, etc. */
+  --color-error: #d53e36;
+  /* Gera: bg-error, text-error, etc. */
+  --color-surface: #ffffff;
+  --color-on-surface: #1f2937;
+  --color-muted: #6b7280;
+  --color-transparent-surface: rgba(255, 255, 255, 0.72);
+
+  /* TIPOGRAFIA: Substituindo a escala de tamanho de texto padrão */
+  --text-base: var(--text-primary-size);
+  /* Mapeia seu size primário para a classe 'text-base' */
+  --text-sm: var(--text-small-size);
+  /* Mapeia seu size pequeno para a classe 'text-sm' */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  /* Sobrescreve a font-sans */
+
+  /* ESPAÇAMENTO: Mapeando sua escala customizada para o namespace --spacing- */
+  /* Remove a escala de espaçamento padrão do Tailwind e usa a sua */
+  /* --spacing-*: initial; */
+  --spacing-1: 4px;
+  /* Gera: p-1, m-1, w-1, etc. */
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 24px;
+
+  /* RADII (Bordas Arredondadas): Mapeando para o namespace --radius- */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* SOMBRAS (Shadows): Mapeando para o namespace --shadow- */
+  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  /* Gera: shadow-1 */
+  --shadow-2: 0 4px 8px rgba(16, 24, 40, 0.06);
+  /* Gera: shadow-2 */
+
+  /* TRANSIÇÕES: Mapeando para o namespace --transition-timing-function- */
+  --transition-timing-function-fast: 150ms cubic-bezier(.4, 0, .2, 1);
+  /* Gera: transition-fast */
+}
+
+/* Design tokens (web tokens) */
+:root {
+  /* cores principais */
+  --color-primary: #61c1d0;
+  /* ciano */
+  --color-error: #d53e36;
+  /* vermelho */
+  --color-surface: #ffffff;
+  /* branco */
+  --color-on-surface: #1f2937;
+  /* cinza escuro - textos */
+  --color-muted: #6b7280;
+  /* cinza médio */
+  --color-transparent-surface: rgba(255, 255, 255, 0.72);
+  /* semi-transparente */
+
+  /* semantic */
+  --bg: var(--color-surface);
+  --fg: var(--color-on-surface);
+  --accent: var(--color-primary);
+  --danger: var(--color-error);
+
+  /* typography */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --text-primary-size: 16px;
+  --text-small-size: 14px;
+
+  /* spacing (scale) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+
+  /* elevation / shadow (subtle for medical clean look) */
+  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-2: 0 4px 8px rgba(16, 24, 40, 0.06);
+
+
+  /* borders */
+  --border-1: 1px solid rgba(31, 41, 55, 0.06);
+
+  /* transitions */
+  --transition-fast: 150ms cubic-bezier(.4, 0, .2, 1);
+}
+
+/* Global base styles for a clean medical aesthetic */
+html,
+body {
+  height: 100%;
+  font-family: var(--font-sans);
+  font-size: var(--text-primary-size);
+  color: var(--fg);
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  /* very subtle */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+}
+
+/* small utility classes to complement Tailwind */
+.card {
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1);
+  border: var(--border-1);
+}
+
+.semi-transparent {
+  background: var(--color-transparent-surface);
+}
+
+.bg-accent {
+  background-color: var(--accent);
+}
+
+/* .rounded-lg {
+  border-radius: var(--radius);
+} */
+
+/* Tailwind import is above and will tree-shake classes used in templates */

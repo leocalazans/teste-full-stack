@@ -1,0 +1,30 @@
+<div *ngIf="isOpen"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 transition-opacity duration-300"
+  (click)="handleBackdropClick($event)">
+  <div role="dialog" [attr.aria-labelledby]="titleId" aria-modal="true"
+    class="relative w-full max-w-lg rounded-xl bg-white shadow-2xl transition-all duration-300 transform scale-100 ease-out">
+    <div class="flex items-center justify-between  p-4">
+      <h2 [id]="titleId" class="text-xl font-semibold text-gray-900">
+        <ng-content select="[modal-title]"></ng-content>
+      </h2>
+
+      <button (click)="handleClose()"
+        class="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none transition">
+        <span class="sr-only">Fechar modal</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div [id]="descriptionId" class="p-4 space-y-4 text-gray-700">
+      <ng-content select="[modal-content]"></ng-content>
+    </div>
+
+    <div class="p-4 flex justify-end gap-2">
+      <ng-content select="[modal-actions]"></ng-content>
+    </div>
+
+  </div>
+</div>
