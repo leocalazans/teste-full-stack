@@ -1,15 +1,12 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject, effect, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DropdownComponent } from '../../components/dropdown/dropdown.component';
-interface Clinic {
-  fantasyName: string;
-  corporateName: string;
-  cnpj: string;
-  status: 'Ativa' | 'Inativa';
-  inauguration: string; // Formato dd/mm/aaaa
-}
+import { DropdownComponent } from '../../../components/dropdown/dropdown.component';
+import { ClinicasService } from '../clinicas.service';
+import { Clinic } from '../clinicas.model';
+import { ToastService } from '../../toast/toast.service';
+
 
 interface SortState {
   column: keyof Clinic | null;
@@ -17,23 +14,24 @@ interface SortState {
 }
 
 @Component({
-  selector: 'app-clinicas',
+  selector: 'app-clinicas-list',
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule, DropdownComponent],
-  templateUrl: './clinicas.component.html',
-  styleUrl: './clinicas.component.css',
+  templateUrl: './clinicas-list.component.html',
+  styleUrl: './clinicas-list.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+
 })
-export class ClinicasComponent {
+export class ClinicasListComponent {
+  private clinicasService = inject(ClinicasService);
+  private router = inject(Router);
+  private toastService = inject(ToastService);
+
+  clinicas = signal<Clinic[]>([]);
+  isLoading = signal(false);
 
   // 1. DADOS ORIGINAIS
   clinics = signal<Clinic[]>([
-    { fantasyName: 'Clínica Sorriso', corporateName: 'Clínica Médica Sorriso LTDA', cnpj: '11.222.333/0001-44', status: 'Ativa', inauguration: '14/01/2020' },
-    { fantasyName: 'Bem Estar', corporateName: 'Centro de Saúde Bem Estar S.A.', cnpj: '44.555.666/0001-77', status: 'Ativa', inauguration: '19/05/2018' },
-    { fantasyName: 'AMI Saúde', corporateName: 'Atendimento Médico Integrado ME', cnpj: '77.888.999/0001-00', status: 'Inativa', inauguration: '31/10/2022' },
-    { fantasyName: 'Clínica Visão', corporateName: 'Oftalmologia Visão Clara', cnpj: '22.333.444/0001-55', status: 'Ativa', inauguration: '10/03/2019' },
-    { fantasyName: 'Ortobem', corporateName: 'Clínica Ortopédica Bem', cnpj: '55.666.777/0001-88', status: 'Ativa', inauguration: '01/07/2021' },
-    { fantasyName: 'CardioMais', corporateName: 'Centro Cardiológico Mais LTDA', cnpj: '88.999.000/0001-11', status: 'Inativa', inauguration: '05/11/2017' },
-    { fantasyName: 'FisioTotal', corporateName: 'Fisioterapia Total LTDA', cnpj: '00.111.222/0001-33', status: 'Ativa', inauguration: '22/04/2023' },
   ]);
 
   isModalOpen = signal(false);
@@ -42,19 +40,17 @@ export class ClinicasComponent {
   searchTerm = signal('');
 
   // 3. PAGINAÇÃO (Sinais para controlar o estado da paginação)
-  pageSize = signal(5);
+  pageSize = signal(10);
   currentPage = signal(1);
 
-  // 💥 NOVO: Estado da Ordenação
-  sortState = signal<SortState>({ column: 'inauguration', direction: 'desc' });
+  sortState = signal<SortState>({ column: 'inauguration_date', direction: 'desc' });
 
   // Função utilitária para converter dd/mm/aaaa para um objeto Date.
-  // IMPORTANTE: Esta é a forma padrão. Se você pudesse usar a Temporal API,
-  // usaria Temporal.PlainDate.from('aaaa-mm-dd') para melhor precisão.
+
+  //  Temporal.PlainDate.from('aaaa-mm-dd') para melhor precisão.
   private parseDate(dateStr: string): Date {
     const [day, month, year] = dateStr.split('/');
     // Cria a data no formato aaaa-mm-dd (ISO) para evitar problemas de fuso horário local.
-    // Mês é base 0 no JavaScript, então month - 1.
     return new Date(`${year}-${month}-${day}`);
   }
 
@@ -84,8 +80,7 @@ export class ClinicasComponent {
 
       let comparison = 0;
 
-      if (state.column === 'inauguration') {
-        // 💥 Lógica específica para DATA 💥
+      if (state.column === 'inauguration_date') {
         const dateA = this.parseDate(aValue as string).getTime();
         const dateB = this.parseDate(bValue as string).getTime();
         comparison = dateA - dateB;
@@ -93,6 +88,8 @@ export class ClinicasComponent {
         // Lógica para strings (Nome, Razão Social, etc.)
         comparison = aValue.localeCompare(bValue);
       } else {
+        const aValue = a[state.column!] ?? '';
+        const bValue = b[state.column!] ?? '';
         // Lógica para outros tipos (se houver números)
         comparison = aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
       }
@@ -154,7 +151,7 @@ export class ClinicasComponent {
         direction = state.direction === 'asc' ? 'desc' : 'asc';
       } else {
         // Se for uma nova coluna, define a direção padrão (ex: descendente para datas)
-        direction = column === 'inauguration' ? 'desc' : 'asc';
+        direction = column === 'inauguration_date' ? 'desc' : 'asc';
       }
 
       // Reinicia a paginação para a primeira página após a ordenação
@@ -171,10 +168,39 @@ export class ClinicasComponent {
 
   selectedItemLabel: string = 'Nenhum';
 
+
+  loadEffect = effect((): void => {
+    this.isLoading.set(true);
+
+    this.clinicasService.list().subscribe({
+      next: (data) => {
+        this.clinics.set(data);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading.set(false);
+      }
+    });
+  });
+
   onItemSelected(item: { label: string, value: any }, id: string) {
-    console.log('ID:', id);
-    console.log('Selecionado:', item.value);
     this.selectedItemLabel = item.label;
-    // Adicione a lógica de ação aqui
+    if (item.value === 'ver') {
+      this.router.navigate([`/dashboard/clinica/${id}`]);
+    }
+    if (item.value === 'deletar') {
+      this.clinicasService.delete(id).subscribe({
+        next: () => {
+          this.toastService.show('Clínica deletada com sucesso!', 'success');
+
+          this.clinics.set(this.clinics().filter(clinic => clinic.id !== id));
+
+        },
+        error: (err) => {
+          console.error('Erro ao deletar clínica:', err);
+        }
+      });
+    }
   }
 }

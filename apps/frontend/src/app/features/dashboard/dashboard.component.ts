@@ -1,8 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-// import { ClinicService } from '../clinic/clinic.service';
-// import { Clinic } from '../clinic/clinic.model';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -10,7 +9,7 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, FormsModule],
   template: `
     <main class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-      <div class="space-y-6">
+      <div class="pt-[42px] space-y-6">
         <div class="flex items-center">
           <div class="flex-1">
             <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>

@@ -69,6 +69,14 @@ O app rodará por padrão em http://127.0.0.1:8000
 
 ---
 
+7. Popular o banco clinicas
+
+    php artisan db:seed
+
+    Para popular com varias clinicas
+
+    php artisan db:seed --class=ClinicsAndSpecialtiesSeeder
+
 ## Composer Alias (Windows Shortcut)
 
 Para facilitar comandos Composer no Windows:
@@ -111,6 +119,7 @@ Depois, todos os comandos Composer podem ser executados via `composer2`.
 - Branch `develop` é usada apenas para testes dos desenvolvedores, não possui rollback real.
 - Use MariaDB 10.3.7 com PHP 7.0 para evitar incompatibilidades com Laravel 5.4.
 - Workflows do GitHub Actions automatizam versionamento e deploy zero-downtime.
+
 
 
 

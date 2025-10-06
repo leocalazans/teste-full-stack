@@ -4,6 +4,7 @@ import { AuthService } from '../features/auth/auth.service';
 import { catchError, map, take } from 'rxjs/operators';
 import { of, Observable } from 'rxjs';
 
+
 /**
  * Functional Guard que verifica o status de autenticação.
  * Refatorado para 'export function' (função nomeada) em vez de 'export const'

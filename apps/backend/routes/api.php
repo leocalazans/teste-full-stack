@@ -88,3 +88,8 @@ Route::post('/debug/login-test', function (Request $request) {
         'cookies' => $request->cookies->all(),
     ]);
 })->middleware('web');
+
+Route::resource('clinics', 'ClinicController', ['only' => ['index', 'store', 'show', 'update', 'destroy']]);
+
+Route::get('specialties', 'SpecialtyController@index');
+Route::get('regions', 'RegionController@index');

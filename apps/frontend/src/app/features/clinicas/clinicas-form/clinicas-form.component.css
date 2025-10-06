@@ -1,0 +1,32 @@
+ /* Estilos básicos para o layout */
+ .bg-background {
+   background-color: #f8fafc;
+ }
+
+ /* light gray/slate 50 */
+ .bg-card {
+   background-color: white;
+ }
+
+ .text-primary {
+   color: #1e40af;
+ }
+
+ /* dark blue/indigo 700 */
+ .border-input {
+   border-color: #d1d5db;
+ }
+
+ /* gray 300 */
+ .focus-visible\:ring-ring {
+   --tw-ring-color: #6366f1;
+ }
+
+ /* indigo 500 */
+ .shadow-xl {
+   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+ }
+
+ .font-mono {
+   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+ }

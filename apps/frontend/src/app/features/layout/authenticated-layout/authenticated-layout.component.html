@@ -50,7 +50,23 @@
   </aside>
 
   <!-- Main Content -->
-  <div class="flex flex-col sm:gap-4 sm:py-4 md:pl-14 sm:pl-14">
+  <div class="flex  flex-col pt-10 sm:gap-4 sm:py-4 md:pl-14 sm:pl-14">
+    <div class="fixed  z-60 sm:z-auto top-0 left-0 w-full">
+      <app-dashboard-header />
+    </div>
+
+    <div class="fixed top-15 right-4 z-50 flex flex-col gap-2">
+      <ng-container *ngFor="let toast of toasts()">
+        <div class="rounded-lg  px-4 py-2 text-white shadow-md animate-slide-in" [ngClass]="{
+        'bg-green-600': toast.type === 'success',
+        'bg-red-600': toast.type === 'error',
+        'bg-blue-600': toast.type === 'info'
+      }">
+          {{ toast.message }}
+        </div>
+      </ng-container>
+    </div>
+
     <router-outlet></router-outlet>
   </div>
 </div>

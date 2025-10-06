@@ -1,0 +1,75 @@
+<header class=" sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-gray-300 bg-white/90 backdrop-blur-sm px-4
+                   sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6
+                   dark:bg-gray-900/90 dark:border-gray-800 ">
+
+  <!-- Área de Crescimento Flexível para empurrar o conteúdo para a direita -->
+  <div class="flex-grow"></div>
+
+  <!-- Contêiner para o botão e o menu, para posicionamento relativo -->
+  <div class="relative flex items-center">
+    <!-- Botão de Avatar do Usuário/Menu de Perfil -->
+    <button class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50
+                 p-2 relative rounded-full dark:hover:bg-gray-800 dark:hover:text-white" type="button"
+      (click)="openProfileMenu()">
+      <span class="relative flex shrink-0 overflow-hidden rounded-full h-9 w-9">
+        <!-- Imagem de Avatar - Usando URL de placeholder segura -->
+        <img class="h-9 w-9 rounded-full object-cover"
+          [src]="'https://placehold.co/90x90/3b82f6/ffffff?text=' + (currentUser()?.name?.[0] ?? 'U')"
+          [alt]="currentUser()?.name ?? 'Usuário'" />
+      </span>
+    </button>
+
+    <!-- Menu Suspenso (Dropdown) - Visível com base no signal. Note o uso de isProfileMenuOpen() -->
+    @if (isProfileMenuOpen()) {
+    <div
+      class="absolute top-12 right-0 z-50 min-w-[8rem] overflow-hidden rounded-md border border-gray-100 bg-white text-gray-900 shadow-xl w-56 dark:bg-gray-800 dark:text-white"
+      tabindex="-1" (click)="preventClose($event)">
+
+      <!-- Informações do Usuário -->
+      <div class="px-2 py-4 text-sm font-normal border-b border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col space-y-1">
+          <p class="text-sm font-medium leading-none">{{ currentUser()?.name ?? 'Usuário' }}</p>
+          <p class="text-xs leading-none text-gray-500 dark:text-gray-400">
+            {{ currentUser()?.email ?? 'usuario@exemplo.com' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Opções de Menu -->
+      <div role="group" class="p-1">
+        <!-- Item Perfil -->
+        <div (click)="goToProfile()"
+          class="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 dark:hover:bg-gray-700 dark:focus:bg-gray-700 dark:focus:text-white"
+          tabindex="0">
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-user mr-2 h-4 w-4">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+
+          <span>Perfil</span>
+        </div>
+      </div>
+
+      <!-- Separador -->
+      <div role="separator" aria-orientation="horizontal" class="-mx-1 my-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+
+      <!-- Item Sair -->
+      <div (click)="logout()"
+        class="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-red-50 focus:bg-red-50 focus:text-red-600 text-red-500 dark:hover:bg-red-900/50 dark:focus:bg-red-900/50 dark:text-red-400"
+        tabindex="0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-log-out mr-2 h-4 w-4">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" x2="9" y1="12" y2="12"></line>
+        </svg>
+        <span>Sair</span>
+      </div>
+    </div>
+    }
+  </div>
+</header>
