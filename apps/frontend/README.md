@@ -2,58 +2,114 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.17.
 
-## Development server
+## 🚀 Development server
 
-To start a local development server, run:
+Para iniciar o ambiente de desenvolvimento com a configuração de proxy ativa, utilize o comando abaixo em vez do ng serve padrão:
 
 ```bash
-ng serve
+npm start
+```
+Esse script executa internamente:
+
+```bash
+ng serve --proxy-config proxy.conf.json
+```
+O arquivo proxy.conf.json é responsável por redirecionar as requisições feitas pela aplicação Angular para o backend durante o desenvolvimento, evitando problemas de CORS e simplificando o consumo das APIs locais.
+
+Após o servidor iniciar, acesse em seu navegador:`http://localhost:4200/`. 
+
+## 🎨 Tailwind CSS
+
+Este projeto utiliza Tailwind CSS para o gerenciamento dos estilos.
+O arquivo `dist/tailwind-output.css` não é versionado no repositório, pois é gerado automaticamente a partir do arquivo `src/styles.css`.
+
+Para gerar e manter o CSS atualizado, execute o comando:
+
+
+```bash
+npm run tailwind:watch
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Esse comando compila as diretivas do Tailwind e mantém o processo de observação ativo para atualizar o arquivo sempre que houver modificações nos estilos.
 
-## Code scaffolding
+# ⚠️ Importante
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Dte o desenvolvimento, é necessário rodar dois processos em paralelo — um para o Angular e outro para o Tailwind.
+Utilize dois terminais:
+
+Terminal 1:
+```bash
+npm start
+```
+Inicia o servidor Angular com o proxy configurado.
+
+Terminal 2:
+```bash
+npm run tailwind:watch
+```
+Inicia o Tailwind em modo watch para compilar os estilos.
+
+## 🚀 Executando Frontend e Tailwind CSS juntos
+
+É possível rodar o Angular e o Tailwind CSS em paralelo no mesmo terminal de duas formas:
+
+# 1️⃣ Usando o operador & (Windows PowerShell ou CMD)
+
+```bash
+npm run dev
+```
+Este comando executa:
+
+```bash
+npm run tailwind:watch & npm start
+```
+inicia o Tailwind em modo watch e o servidor Angular simultaneamente.
+Pode gerar logs misturados no terminal.
+Funciona sem instalar pacotes extras.
+
+2️⃣ Usando o pacote concurrently
+
+```bash
+npm run dev:concurrently
+```
+Este comando executa:
+
+```bash
+concurrently "npm run tailwind:watch" "npm start"
+```
+Inicia ambos os processos em paralelo com logs separados e coloridos.
+
+Recomendado para uma visualização mais organizada.
+
+Requer instalar concurrently como dependência de desenvolvimento rodando novamente `npm install global` ou `npm install concurrently --save-dev`
+
+⚠️ Observação:
+Ambos os métodos são equivalentes, mas se você quiser um terminal limpo e organizado, use dev:concurrently.
+Lembre-se de ter o dist/tailwind-output.css sendo gerado pelo Tailwind antes de iniciar a aplicação.
+ 
+
+## 🧩 Geração de Código (Scaffolding)
+
+O Angular CLI possui ferramentas poderosas de geração de código.
+Para criar um novo componente, utilize:
 
 ```bash
 ng generate component component-name
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Para listar todos os tipos de schematics disponíveis (como `components`, `directives`, or `pipes`), use:
 
 ```bash
 ng generate --help
 ```
 
-## Building
+## 🏗️ Build do Projeto
 
-To build the project run:
+Para gerar a build de produção, execute:
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Esse comando compila a aplicação e salva os artefatos finais na pasta `dist/.`
+A build de produção é otimizada automaticamente para melhor desempenho e velocidade.

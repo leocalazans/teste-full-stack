@@ -3,11 +3,12 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "starts": "ng serve ",
     "start": "ng serve  --proxy-config proxy.conf.json",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "dev": "npm run tailwind:watch & npm start",
+    "dev:concurrently": "concurrently \"npm run tailwind:watch\" \"npm start\"",
     "tailwind:watch": "npx @tailwindcss/cli -i src/styles.css -o dist/tailwind-output.css --watch"
   },
   "private": true,
@@ -31,6 +32,7 @@
     "@tailwindcss/postcss": "^4.1.13",
     "@types/jasmine": "~5.1.0",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.1",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
